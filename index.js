@@ -712,12 +712,13 @@ else{
             if (event['p'] == "c"){ // change in content
                 var inputData  = event['d'];
                 console.log(inputData,"inputData");
+                var startCol = inputData['changes'][0].range.startColumn-1
                 var textLines = inputData['changes'][0].text;
 
                 var old_value=it.getValue()
 
-                it.setValue(old_value+textLines)
-
+                var output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                it.setValue(output)
                 // console.log(it,"Editor");
             }
             else if(event['p'] == "u"){
@@ -1618,7 +1619,6 @@ else{
       };
 
       var livewritingMainfunction = function (message, option1, option2, option3){
-          console.log("1111111111122221111111", option1)
           var it;
 
           if ($(this).length==1){
