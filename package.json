@@ -1,0 +1,36 @@
+{
+  "name": "livewriting",
+  "version": "0.2.6",
+  "description": "Live Writing - Asynchrnous Playback of Writing and Programming",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panavrin/livewriting.git"
+  },
+  "keywords": [
+    "programming",
+    "writing",
+    "live",
+    "coding",
+    "replay",
+    "recording"
+  ],
+  "author": "Sang Won Lee <sangwonlee717@gmail.com> (http://www.sangwonlee.com)",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/panavrin/livewriting#readme"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/panavrin/livewriting/issues"
+  },
+  "homepage": "https://github.com/panavrin/livewriting#readme",
+  "dependencies": {
+    "jquery": "^2.1.4",
+    "jquery-ui": "^1.10.5"
+  }
+}

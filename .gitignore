@@ -1,0 +1,16 @@
+
+lib/data/*
+node_modules/*
+.idea/*
+*.log
+./public_html/js/localsetting.js
+public_html/js/localsetting.js
+
+public_html/js/localsetting.js
+
+public_html/tindermusic/*
+
+public_html/text-demo/*
+public_html/pat_simplified/*
+
+*.zip

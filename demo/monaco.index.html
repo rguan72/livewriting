@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+    <link rel="stylesheet" type="text/css" href="./lib/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="https://microsoft.github.io/monaco-editor/lib/bootstrap-cosmo.css">
+    <link rel="stylesheet" href="https://microsoft.github.io/monaco-editor/lib/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="https://microsoft.github.io/monaco-editor/all.css">
+    <link rel="stylesheet" href="https://microsoft.github.io/monaco-editor/index/index.css">
+    <link rel="stylesheet" href="./lib/monaco/node_modules/monaco-editor/min/vs/editor/editor.main.css">
+    <script src="./lib/jquery-1.11.1.min.js" type="text/javascript"></script>
+    <script src="./lib/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="./lib/monaco/node_modules/monaco-editor/min/vs/loader.js"></script>
+    <link rel="stylesheet" type="text/css" href="../livewriting.css"/>
+    <script src="../index.js"></script>
+</head>
+<body>
+
+<section class="try">
+    <div class="container">
+        <div class="editor row">
+            <div class="span9">
+                <div class="row">
+                    <div class="span4">
+                        <label class="control-label">Language</label>
+                        <select class="language-picker"></select>
+                    </div>
+                    <div class="span4">
+                        <label class="control-label">Theme</label>
+                        <select class="theme-picker">
+                            <option>Visual Studio</option>
+                            <option>Visual Studio Dark</option>
+                            <option>High Contrast Dark</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="editor-frame">
+                    <div class="loading editor" style="display: none;">
+                        <div class="progress progress-striped active">
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                    <div id="editor" class="monaco_editor"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+<div>
+    <button id = "submit">Submit</button>
+</div>
+
+
+<script>
+  'use strict';
+  require.config({
+    baseUrl: 'https://microsoft.github.io/monaco-editor/node_modules/monaco-editor/min/'
+  });
+
+
+  var editor = null, diffEditor = null;
+
+  $(document).ready(function() {
+    require(['vs/editor/editor.main'], function () {
+      var MODES = (function() {
+        var modesIds = monaco.languages.getLanguages().map(function(lang) { return lang.id; });
+        modesIds.sort();
+
+        return modesIds.map(function(modeId) {
+          return {
+            modeId: modeId,
+            sampleURL: 'https://microsoft.github.io/monaco-editor/index/samples/sample.' + modeId + '.txt'
+          };
+        });
+      })();
+
+      for (var i = 0; i < MODES.length; i++) {
+        var o = document.createElement('option');
+        o.textContent = MODES[i].modeId;
+        $(".language-picker").append(o);
+      }
+      $(".language-picker").change(function() {
+        loadSample(MODES[this.selectedIndex]);
+      });
+      loadSample(MODES[0]);
+
+      $(".theme-picker").change(function() {
+        changeTheme(this.selectedIndex);
+      });
+      loadDiffSample();
+
+      $('#inline-diff-checkbox').change(function () {
+        diffEditor.updateOptions({
+          renderSideBySide: !$(this).is(':checked')
+        });
+      });
+    });
+
+    window.onresize = function () {
+      if (editor) {
+        editor.layout();
+      }
+      if (diffEditor) {
+        diffEditor.layout();
+      }
+    };
+  });
+
+  function loadSample(mode) {
+    if (!editor) {
+      $('#editor').empty();
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        model: null,
+        readOnly:false
+      });
+
+    }
+
+    var oldModel = editor.getModel();
+    var newModel = monaco.editor.createModel('', mode.modeId);
+    editor.setModel(newModel);
+    if (oldModel) {
+      oldModel.dispose();
+    }
+
+
+    $('.loading.editor').fadeOut({ duration: 200 });
+    editor.livewriting = livewriting;
+    editor.livewriting("create", "monaco",{}, "");
+    $("#submit").click(function(){
+      editor.livewriting("playJson", editor.livewriting("returnactiondata"));
+      editor.updateOptions({readOnly: true});
+      $('.span4').empty()
+      $("#submit").hide();
+    });
+  }
+
+  function loadDiffSample() {
+
+    var onError = function() {
+      $('.loading.diff-editor').fadeOut({ duration: 200 });
+      $('#diff-editor').append('<p class="alert alert-error">Failed to load diff editor sample</p>');
+    };
+
+    $('.loading.diff-editor').show();
+
+    var lhsData = null, rhsData = null, jsMode = null;
+
+    $.ajax({
+      type: 'GET',
+      url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.lhs.txt',
+      dataType: 'text',
+      error: onError
+    }).done(function (data) {
+      lhsData = data;
+      onProgress();
+    });
+
+    $.ajax({
+      type: 'GET',
+      url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.rhs.txt',
+      dataType: 'text',
+      error: onError
+    }).done(function (data) {
+      rhsData = data;
+      onProgress();
+    });
+
+    function onProgress() {
+      if (lhsData && rhsData) {
+        diffEditor = monaco.editor.createDiffEditor(document.getElementById('diff-editor'), {
+          enableSplitViewResizing: false
+        });
+
+        var lhsModel = monaco.editor.createModel(lhsData, 'text/javascript');
+        var rhsModel = monaco.editor.createModel(rhsData, 'text/javascript');
+
+        diffEditor.setModel({
+          original: lhsModel,
+          modified: rhsModel
+        });
+
+        $('.loading.diff-editor').fadeOut({ duration: 300 });
+      }
+    }
+  }
+
+  function changeTheme(theme) {
+    var newTheme = (theme === 1 ? 'vs-dark' : ( theme === 0 ? 'vs' : 'hc-black' ));
+    if (editor) {
+      editor.updateOptions({ 'theme' : newTheme });
+    }
+    if (diffEditor) {
+      diffEditor.updateOptions({ 'theme': newTheme });
+    }
+  }
+
+
+</script>
+</body>
+</html>
