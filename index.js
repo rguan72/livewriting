@@ -724,7 +724,6 @@ else{
             if(DEBUG) console.log("reverse:" + reverse + " " + JSON.stringify(event));
             if (event['p'] == "c"){ // change in content
                 var inputData  = event['d'];
-                console.log(inputData,"55220022555");
                 var startCol = inputData['changes'][0].range.startColumn-1
                 var textLines = inputData['changes'][0].text;
 
@@ -738,16 +737,31 @@ else{
                     it.setValue(output)
                 }
             }
-            else if(event['p'] == "u"){
-                var old_val=it.getValue();
-                var  position = event['d'].position.column-1
-                var output
-                if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
-                    output = remove_char_by_index(position, old_val)
-                    it.setValue(output)
-                    it.setPosition(event['d'].position)
+             if(event['p'] == "u"){
+
+                // var output
+                if (reverse){
+                    if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
+                        it.setPosition(event['d'].position)
+                    }
+                    else{
+                        it.setPosition(event['d'].position)
+                        output = remove_char_by_index(it.getPosition().column-1, it.getValue())
+                        it.setValue(output)
+                        it.setPosition(event['d'].position)
+                    }
                 }
-                it.setPosition(event['d'].position)
+                else{
+                    if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
+                        it.setPosition(event['d'].position)
+                        output = remove_char_by_index(it.getPosition().column-1, it.getValue())
+                        it.setValue(output)
+                        it.setPosition(event['d'].position)
+                    }
+                    else{
+                        it.setPosition(event['d'].position)
+                    }
+                }
             }
             if(reverse){
                 it.lw_data_index--;
@@ -759,7 +773,7 @@ else{
           //   // chcek the final text once it is done.
             if (it.lw_data_index == it.lw_data.length){
                 if(DEBUG)console.log("done replay");
-                it.lw_data_index = it.lw_data.length-1;
+                it.lw_data_index = it.lw_data.length;
                 $('.play').trigger("click");
             }
           //
