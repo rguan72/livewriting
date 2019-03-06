@@ -510,7 +510,7 @@ else{
             var it = editor;
             var timestamp = (new Date()).getTime()- it.lw_startTime,
               index = it.lw_liveWritingJsonData.length;
-            it.lw_liveWritingJsonData[index] = {"p":"u", "t":timestamp, "d":event.position, "b": 0};
+            it.lw_liveWritingJsonData[index] = {"p":"u", "t":timestamp, "d":event, "b": 0};
             if(DEBUG)console.log("change event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp)
         },
       scheduleNextEventFunc = function(){
@@ -633,13 +633,15 @@ else{
             if (inputData.action == "insert"){ // change in content
               if(reverse){
                 it.session.doc.remove(inputData);
+                  console.log(it.session.doc,"((((((((((((((((((((((");
               }
               else{
                 var textLines = inputData['lines'].join('\n');
                 it.moveCursorTo(startLine,startCh);
                 it.insert(textLines);
               }
-            }else if (inputData.action == "remove"){ // change in content
+            }else if (inputData.action == "remove"){
+                // change in content
               //var range = new it.lw_ace_Range(startLine, startCh,endLine, endCh );
               if(reverse){
                 var textLines = inputData['lines'].join('\n');
@@ -702,6 +704,17 @@ else{
 
       },
         triggerPlayMonacoFunc =  function(reverse, skipSchedule){
+            var remove_char_by_index = function (index, string) {
+
+                if (index > string.length) return string;
+
+                let str = "";
+                for (let x = 0; x < string.length; x++) {
+                    if (x === index) continue;
+                    str += string[x];
+                }
+                return str;
+            }
             var it = this;
               var event = it.lw_data[it.lw_data_index];
             if(event == undefined){
@@ -711,26 +724,30 @@ else{
             if(DEBUG) console.log("reverse:" + reverse + " " + JSON.stringify(event));
             if (event['p'] == "c"){ // change in content
                 var inputData  = event['d'];
-                console.log(inputData,"inputData");
+                console.log(inputData,"55220022555");
                 var startCol = inputData['changes'][0].range.startColumn-1
                 var textLines = inputData['changes'][0].text;
 
                 var old_value=it.getValue()
-
-                var output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
-                it.setValue(output)
-                // console.log(it,"Editor");
+                if (reverse){
+                    var output = remove_char_by_index(startCol, old_value)
+                    it.setValue(output)
+                }
+                else{
+                    var output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                    it.setValue(output)
+                }
             }
             else if(event['p'] == "u"){
-                var old_time = event['t']
-                // var isEqualTime = old_time==it.lw_endTime
-                // if (isEqualTime){
-                //     console.log('bu')
-                // }else{
-                    it.setPosition(event['d'])
-                // console.log(event['d'],it.getPosition(), 'eventi d')
-                // console.log(it, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeee');
-                // }
+                var old_val=it.getValue();
+                var  position = event['d'].position.column-1
+                var output
+                if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
+                    output = remove_char_by_index(position, old_val)
+                    it.setValue(output)
+                    it.setPosition(event['d'].position)
+                }
+                it.setPosition(event['d'].position)
             }
             if(reverse){
                 it.lw_data_index--;
@@ -1451,12 +1468,10 @@ else{
           if(it.lw_type=="ace"){
             if (it.lw_data[i].d.action == "insert")
             {
-                console.log("iiiiiiiiiiiiiiiiiiiiii");
                 length = it.lw_data[i].d.lines.join().length;
               inserted[index] += length
             }
             else if(it.lw_data[i].d.action == "remove"){
-                console.log("rrrrrrrrrrrrrrrrrrrrrrrrr");
               length = it.lw_data[i].d.lines.join().length;
               removed[index] += length;
             }

@@ -134,7 +134,8 @@
     $("#submit").click(function(){
       editor.livewriting("playJson", editor.livewriting("returnactiondata"));
       editor.updateOptions({readOnly: true});
-      $('.span4').empty()
+      $( ".language-picker" ).prop( "disabled", true );
+      $( ".theme-picker" ).prop( "disabled", true );
       $("#submit").hide();
     });
   }
