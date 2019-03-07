@@ -468,6 +468,20 @@ else{
           it.lw_liveWritingJsonData[index] = {"p":"s", "t":timestamp, "f":scrollinfo.left, "to":scrollinfo.top};
           if(DEBUG)console.log("viewPortChange event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp);
       }
+        ,scrollLeftMonacoFunc = function(editor, number){
+            var it = editor;
+            var timestamp = (new Date()).getTime()- it.lw_startTime,
+              index = it.lw_liveWritingJsonData.length;
+            it.lw_liveWritingJsonData[index] = {"p":"s", "t":timestamp, "n":number, "y":"left"};
+            if(DEBUG)console.log("viewPortChange event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp);
+        },
+      scrollTopMonacoFunc = function(editor, number){
+          var it = editor;
+          var timestamp = (new Date()).getTime()- it.lw_startTime,
+            index = it.lw_liveWritingJsonData.length;
+          it.lw_liveWritingJsonData[index] = {"p":"s", "t":timestamp, "n":number, "y":"top"};
+          if(DEBUG)console.log("viewPortChange event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp);
+      }
       ,scrollLeftAceFunc = function(editor, number){
           var it = editor;
           var timestamp = (new Date()).getTime()- it.lw_startTime,
@@ -476,7 +490,8 @@ else{
           if(DEBUG)console.log("viewPortChange event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp);
       }
       ,scrollTopAceFunc = function(editor, number){
-          var it = editor;
+            console.log(number,"numbeeeeerrrrrrrrrrrrrrrrrrrrrrr");
+            var it = editor;
           var timestamp = (new Date()).getTime()- it.lw_startTime,
               index = it.lw_liveWritingJsonData.length;
           it.lw_liveWritingJsonData[index] = {"p":"s", "t":timestamp, "n":number, "y":"top"};
@@ -728,11 +743,7 @@ else{
                 var textLines = inputData['changes'][0].text;
 
                 var old_value=it.getValue()
-                if (reverse){
-                    var output = remove_char_by_index(startCol, old_value)
-                    it.setValue(output)
-                }
-                else{
+                if (!reverse){
                     var output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
                     it.setValue(output)
                 }
@@ -745,16 +756,16 @@ else{
                         it.setPosition(event['d'].position)
                     }
                     else{
-                        it.setPosition(event['d'].position)
-                        output = remove_char_by_index(it.getPosition().column-1, it.getValue())
+                        output = remove_char_by_index(it.getPosition().column-2, it.getValue())
                         it.setValue(output)
                         it.setPosition(event['d'].position)
                     }
                 }
                 else{
                     if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
-                        it.setPosition(event['d'].position)
-                        output = remove_char_by_index(it.getPosition().column-1, it.getValue())
+                        var getPos = it.getPosition().column-2;
+                        var getVal = it.getValue()
+                        output = remove_char_by_index(getPos, getVal)
                         it.setValue(output)
                         it.setPosition(event['d'].position)
                     }
@@ -763,6 +774,18 @@ else{
                     }
                 }
             }
+
+             else if (event['p'] == "s"){ // scroll
+                 if (event["y"] == "left"){
+                     it.setScrollLeft(event['n']);
+                 }else if (event["y"] == "top")
+                 {
+                     it.setScrollTop(event['n']);
+                 }
+                 else{
+                     if(DEBUG) alert("unknown scorll type for ace editor: " +event["y"] )
+                 }
+             }
             if(reverse){
                 it.lw_data_index--;
 
@@ -1273,7 +1296,7 @@ else{
         $(".livewriting_slider").slider("value",0);
 
       },
-      monacoEventChange,monacoEventCursor,
+      monacoEventChange,monacoEventCursor,monacoEventScroll,
       createLiveWritingTextArea= function(it, type, options, initialValue){
 
               var defaults = {
@@ -1363,10 +1386,9 @@ else{
                   else if (type == "monaco"){
                       it.setValue(it.lw_initialText)
                       it.onDidChangeModel(event=>{
-                          console.log(event, '233556567768989');
-                          console.log(it, 'it');
                           monacoEventChange.dispose()
                           monacoEventCursor.dispose()
+                          monacoEventScroll.dispose()
                       })
                       monacoEventChange=it.onDidChangeModelContent((event) => {
                           if (event.changes[0].text !== "") {
@@ -1375,6 +1397,10 @@ else{
                       });
                       monacoEventCursor=it.onDidChangeCursorPosition((event)=>{
                          cursorMonacoFunction(event,it)
+                      });
+                      monacoEventScroll=it.onDidScrollChange((event)=>{
+                           scrollLeftMonacoFunc(it,event.scrollLeft)
+                          scrollTopMonacoFunc(it,event.scrollTop)
                       })
                   }
 
