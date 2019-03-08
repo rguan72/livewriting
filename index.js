@@ -744,7 +744,16 @@ else{
 
                 var old_value=it.getValue()
                 if (!reverse){
-                    var output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                  //it needs to be fixed
+                  // var output
+                  // if (textLines.charCodeAt(0)==13){
+                  //   output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines, ].join('');
+                  // }
+                  // else{
+                  //   output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                  // }
+                  // it.setValue(output)
+                    var output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines, ].join('')
                     it.setValue(output)
                 }
             }
