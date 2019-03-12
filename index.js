@@ -718,6 +718,7 @@ else{
           it.lw_scheduleNextEvent();
 
       },
+      enterSubmit = false,
         triggerPlayMonacoFunc =  function(reverse, skipSchedule){
             var remove_char_by_index = function (index, string) {
 
@@ -742,36 +743,44 @@ else{
                 var startCol = inputData['changes'][0].range.startColumn-1
                 var textLines = inputData['changes'][0].text;
 
-                var old_value=it.getValue()
+              var old_value=it.getValue()
                 if (!reverse){
                   //it needs to be fixed
-                  // var output
-                  // if (textLines.charCodeAt(0)==13){
-                  //   output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines, ].join('');
-                  // }
-                  // else{
-                  //   output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
-                  // }
-                  // it.setValue(output)
-                    var output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines, ].join('')
-                    it.setValue(output)
+                  var output
+                  if(textLines.length>=8&&textLines.charCodeAt(0)==13&&textLines.charCodeAt(textLines[textLines.length-1])==13){
+                    output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                  }
+
+                  else if (textLines.charCodeAt(0)==13){
+                    enterSubmit = true
+                    output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines].join('');
+                  }
+                  else{
+                    if (enterSubmit) {
+                      startCol = old_value.length-1
+                    }
+                    output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                  }
+
+                  it.setValue(output)
                 }
             }
              if(event['p'] == "u"){
 
                 // var output
                 if (reverse){
-                    if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
+                    if (event['d'].source == "deleteLeft") {
                         it.setPosition(event['d'].position)
                     }
                     else{
+                      console.log(it);
                         output = remove_char_by_index(it.getPosition().column-2, it.getValue())
                         it.setValue(output)
                         it.setPosition(event['d'].position)
                     }
                 }
                 else{
-                    if (event['d'].source == "deleteLeft"|| event['d'].source == "deleteRight") {
+                    if (event['d'].source == "deleteLeft") {
                         var getPos = it.getPosition().column-2;
                         var getVal = it.getValue()
                         output = remove_char_by_index(getPos, getVal)
@@ -781,6 +790,32 @@ else{
                     else{
                         it.setPosition(event['d'].position)
                     }
+                  if (event['d'].reason == 5|| event['d'].source == "deleteRight") {
+                    var getPos = it.getPosition().column;
+                    var getLine = it.getPosition().lineNumber;
+                    var getVal
+                    if (getLine>1){
+                      getVal = it.getValue()
+                      getPos = getVal.length-getPos
+                      output = getVal.substring(0, getPos);
+                      it.setValue(output)
+                      it.setPosition(event['d'].position)
+                    }
+                    else{
+                      getVal = it.getValue()
+                      output = getVal.substring(0, getPos);
+                      it.setValue(output)
+                      it.setPosition(event['d'].position)
+                    }
+                  }
+                  else{
+                    it.setPosition(event['d'].position)
+                  }
+                  var old_position = it.getPosition()
+                  console.log(old_position,"44444444444444");
+                  if (event['d'].source == 'modelChange') {
+                    console.log(it.getPosition(),"55555555555555555");
+                  }
                 }
             }
 
