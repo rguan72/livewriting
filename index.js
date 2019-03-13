@@ -744,24 +744,37 @@ else{
                 var textLines = inputData['changes'][0].text;
 
               var old_value=it.getValue()
+                var row_aray = old_value.split('\n')
+                console.log(row_aray);
                 if (!reverse){
                   //it needs to be fixed
                   var output
                   if(textLines.length>=8&&textLines.charCodeAt(0)==13&&textLines.charCodeAt(textLines[textLines.length-1])==13){
-                    output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
+                      var count = 0
+                      for(var i in row_aray){
+                          if (i==it.getPosition().lineNumber-1){
+                              console.log("aaaaaaaaa");
+                              break;
+                          }
+                          count+=row_aray[i].length+1
+                      }
+                      count+=it.getPosition().column-1
+                      output = [old_value.slice(0, count),textLines,old_value.slice(count)].join('');
+                      enterSubmit = true
                   }
-
-                  else if (textLines.charCodeAt(0)==13){
-                    enterSubmit = true
-                    output = [old_value.slice(0, startCol),old_value.slice(startCol),textLines].join('');
+                  else {
+                      var count = 0
+                      for(var i in row_aray){
+                          if (i==it.getPosition().lineNumber-1){
+                              break;
+                          }
+                          count+=row_aray[i].length+1
+                      }
+                      count+=it.getPosition().column-1
+                      console.log(count,"count");
+                      enterSubmit = true
+                    output = [old_value.slice(0, count),textLines,old_value.slice(count)].join('');
                   }
-                  else{
-                    if (enterSubmit) {
-                      startCol = old_value.length-1
-                    }
-                    output = [old_value.slice(0, startCol), textLines, old_value.slice(startCol)].join('');
-                  }
-
                   it.setValue(output)
                 }
             }
@@ -810,11 +823,6 @@ else{
                   }
                   else{
                     it.setPosition(event['d'].position)
-                  }
-                  var old_position = it.getPosition()
-                  console.log(old_position,"44444444444444");
-                  if (event['d'].source == 'modelChange') {
-                    console.log(it.getPosition(),"55555555555555555");
                   }
                 }
             }
