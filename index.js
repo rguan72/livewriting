@@ -720,15 +720,25 @@ else{
       },
       enterSubmit = false,
         triggerPlayMonacoFunc =  function(reverse, skipSchedule){
-            var remove_char_by_index = function (index, string) {
-
+            var remove_char_by_index = function (index, string, line) {
+                var row_aray = string.split('\n')
+                console.log(row_aray, 'row', line, index);
                 if (index > string.length) return string;
 
                 let str = "";
-                for (let x = 0; x < string.length; x++) {
-                    if (x === index) continue;
-                    str += string[x];
+                for(let i in row_aray){
+                    if(i==line-1){
+                        for (let x = 0; x < row_aray[i].length; x++) {
+                            if (x === index) continue;
+                            str += row_aray[i][x];
+                            console.log(str,'strif')
+                        }
+                    }else{
+                        str+=row_aray[i]
+                    }
+                    console.log(str,'strfor')
                 }
+                console.log(str,'str')
                 return str;
             }
             var it = this;
@@ -777,6 +787,12 @@ else{
                   }
                   it.setValue(output)
                 }
+                else {
+                    var getPos = it.getPosition().column-2;
+                    var getVal = it.getValue()
+                    output = remove_char_by_index(getPos, getVal,it.getPosition().lineNumber)
+                    it.setValue(output)
+                }
             }
              if(event['p'] == "u"){
 
@@ -787,7 +803,7 @@ else{
                     }
                     else{
                       console.log(it);
-                        output = remove_char_by_index(it.getPosition().column-2, it.getValue())
+                        output = remove_char_by_index(it.getPosition().column-2, it.getValue(),it.getPosition().lineNumber)
                         it.setValue(output)
                         it.setPosition(event['d'].position)
                     }
@@ -796,7 +812,7 @@ else{
                     if (event['d'].source == "deleteLeft") {
                         var getPos = it.getPosition().column-2;
                         var getVal = it.getValue()
-                        output = remove_char_by_index(getPos, getVal)
+                        output = remove_char_by_index(getPos, getVal,it.getPosition().lineNumber)
                         it.setValue(output)
                         it.setPosition(event['d'].position)
                     }
@@ -1648,6 +1664,7 @@ else{
         else if (it.lw_type  == "monaco"){
             monacoEventChange.dispose();
             monacoEventCursor.dispose()
+            monacoEventScroll.dispose()
         }
         else if (it.lw_type  == "ace"){
           it.off("change", changeAceFunc);
