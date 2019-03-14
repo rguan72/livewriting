@@ -720,18 +720,22 @@ else{
       },
       enterSubmit = false,
         triggerPlayMonacoFunc =  function(reverse, skipSchedule){
-            var remove_char_by_index = function (index, string, line) {
+            var remove_char_by_index = function (index, string, line,stringLength) {
                 var row_aray = string.split('\n')
                 console.log(row_aray, 'row', line, index);
                 if (index > string.length) return string;
 
                 let str = "";
-                for(let i in row_aray){
+                for(var i in row_aray){
                     if(i==line-1){
-                        for (let x = 0; x < row_aray[i].length; x++) {
-                            if (x === index) continue;
-                            str += row_aray[i][x];
-                            console.log(str,'strif')
+                        if(stringLength>1 && !row_aray[i].replace(/\s/g, '').length){
+                            console.log(row_aray[i],'iiiiiiiiiit')
+                        }else {
+                            for (let x = 0; x < row_aray[i].length; x++) {
+                                if (x === index) continue;
+                                str += row_aray[i][x];
+                                console.log(row_aray[i].length,x, index, 'strif')
+                            }
                         }
                     }else{
                         str+=row_aray[i]
@@ -759,54 +763,38 @@ else{
                 if (!reverse){
                   //it needs to be fixed
                   var output
-                  if(textLines.length>=8&&textLines.charCodeAt(0)==13&&textLines.charCodeAt(textLines[textLines.length-1])==13){
                       var count = 0
                       for(var i in row_aray){
                           if (i==it.getPosition().lineNumber-1){
-                              console.log("aaaaaaaaa");
                               break;
                           }
                           count+=row_aray[i].length+1
                       }
                       count+=it.getPosition().column-1
+                      enterSubmit = true
                       output = [old_value.slice(0, count),textLines,old_value.slice(count)].join('');
-                      enterSubmit = true
-                  }
-                  else {
-                      var count = 0
-                      for(var i in row_aray){
-                          if (i==it.getPosition().lineNumber-1){
-                              break;
-                          }
-                          count+=row_aray[i].length+1
-                      }
-                      count+=it.getPosition().column-1
-                      console.log(count,"count");
-                      enterSubmit = true
-                    output = [old_value.slice(0, count),textLines,old_value.slice(count)].join('');
-                  }
-                  it.setValue(output)
+                      it.setValue(output)
+                        it.setPosition({
+                            column: event['d'].changes[0].range.startColumn,
+                            lineNumber: event['d'].changes[0].range.startLineNumber,
+                        });
                 }
                 else {
                     var getPos = it.getPosition().column-2;
                     var getVal = it.getValue()
-                    output = remove_char_by_index(getPos, getVal,it.getPosition().lineNumber)
+                    output = remove_char_by_index(getPos, getVal,it.getPosition().lineNumber,textLines.length)
                     it.setValue(output)
+                    it.setPosition({
+                        column: event['d'].changes[0].range.startColumn,
+                        lineNumber: event['d'].changes[0].range.startLineNumber,
+                    });
                 }
             }
              if(event['p'] == "u"){
 
                 // var output
                 if (reverse){
-                    if (event['d'].source == "deleteLeft") {
-                        it.setPosition(event['d'].position)
-                    }
-                    else{
-                      console.log(it);
-                        output = remove_char_by_index(it.getPosition().column-2, it.getValue(),it.getPosition().lineNumber)
-                        it.setValue(output)
-                        it.setPosition(event['d'].position)
-                    }
+
                 }
                 else{
                     if (event['d'].source == "deleteLeft") {
@@ -826,13 +814,13 @@ else{
                     if (getLine>1){
                       getVal = it.getValue()
                       getPos = getVal.length-getPos
-                      output = getVal.substring(0, getPos);
+                      output = getVal.substring(0, getPos-1);
                       it.setValue(output)
                       it.setPosition(event['d'].position)
                     }
                     else{
                       getVal = it.getValue()
-                      output = getVal.substring(0, getPos);
+                      output = getVal.substring(0, getPos-1);
                       it.setValue(output)
                       it.setPosition(event['d'].position)
                     }
