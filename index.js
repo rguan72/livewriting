@@ -452,6 +452,9 @@ else{
           if(DEBUG)console.log("change event :" +JSON.stringify(it.lw_liveWritingJsonData[index])  + " time:" + timestamp);
       },
         changeMonacoFunc = function(event, editor){
+            console.log($('.editor-widget.suggest-widget'));
+            $('.editor-widget').css('display','none')
+            $('.monaco-list-rows').html("")
             console.log(event,"event");
             console.log(editor,'editor');
             var it = editor
