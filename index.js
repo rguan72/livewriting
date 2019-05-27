@@ -1487,6 +1487,7 @@ else{
           data["editor_type"] = it.lw_type;
           data["initialtext"] = it.lw_initialText;
           data["action"] = it.lw_liveWritingJsonData;
+          it.lw_liveWritingJsonData = [];
           data["localEndtime"] = new Date().getTime();
           data["localStarttime"] = it.lw_startTime;
 
